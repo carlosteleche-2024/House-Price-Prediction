@@ -1,6 +1,9 @@
 from pathlib import Path
 
 import joblib
+import argparse
+import json
+from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 
@@ -29,15 +32,16 @@ MODEL_PATH = BASE_DIR / "modelo_fase2.joblib"
 # Carga y preparación de los datos
 # ---------------------------------------------------------
 
-def cargar_datos():
+def cargar_datos(ruta=None):
     """Carga y prepara el conjunto de datos utilizado en la Fase 1."""
 
-    if not DATA_PATH.exists():
+    ruta = Path(ruta) if ruta is not None else DATA_PATH
+    if not ruta.exists():
         raise FileNotFoundError(
-            f"No se encontró el dataset en: {DATA_PATH}"
+            f"No se encontró el dataset en: {ruta}"
         )
 
-    df = pd.read_csv(DATA_PATH)
+    df = pd.read_csv(ruta)
 
     # Mantener únicamente registros con precio válido.
     df = df[df["price"] > 0].copy()
@@ -163,8 +167,11 @@ def calcular_metricas(y_real, y_pred):
 # Entrenamiento
 # ---------------------------------------------------------
 
-def entrenar():
-    X, y = cargar_datos()
+def entrenar(data_path=None, model_path=None, output_dir=None):
+    X, y = cargar_datos(data_path)
+    model_path = Path(model_path) if model_path else MODEL_PATH
+    output_dir = Path(output_dir) if output_dir else model_path.parent
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # -----------------------------------------------------
     # 1. Separación entrenamiento / prueba
@@ -253,10 +260,19 @@ def entrenar():
     # 6. Guardar modelo
     # -----------------------------------------------------
 
-    joblib.dump(modelo_final, MODEL_PATH)
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(modelo_final, model_path)
+    # Dos artefactos versionados con metadatos y métricas verificables.
+    for version, nombre in enumerate(sorted(resultados_validacion, key=lambda n: resultados_validacion[n]["MAE"])[:2], start=1):
+        candidato = crear_modelos(X_train)[nombre]
+        candidato.fit(X_train, y_train)
+        ruta_version = output_dir / f"modelo_v{version}.joblib"
+        joblib.dump(candidato, ruta_version)
+        meta = {"version": version, "modelo": nombre, "fecha_utc": datetime.now(timezone.utc).isoformat(), "random_state": RANDOM_STATE, "filas_entrenamiento": len(X_train), "metricas_validacion": {k: float(v) for k, v in resultados_validacion[nombre].items()}, "ruta_modelo": ruta_version.name}
+        (output_dir / f"modelo_v{version}.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print("\nModelo guardado correctamente en:")
-    print(MODEL_PATH)
+    print(model_path)
 
     return modelo_final
 
@@ -266,4 +282,9 @@ def entrenar():
 # ---------------------------------------------------------
 
 if __name__ == "__main__":
-    entrenar()
+    parser = argparse.ArgumentParser(description="Entrenamiento reproducible de la fase 2")
+    parser.add_argument("--data", default=str(DATA_PATH))
+    parser.add_argument("--model", default=str(MODEL_PATH))
+    parser.add_argument("--output-dir", default=None)
+    args = parser.parse_args()
+    entrenar(args.data, args.model, args.output_dir)

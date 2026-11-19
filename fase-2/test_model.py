@@ -13,11 +13,13 @@ def test_archivo_datos_existe():
 
 
 def test_cargar_datos():
-    datos = cargar_datos()
+    X, y = cargar_datos()
 
-    assert isinstance(datos, pd.DataFrame)
-    assert not datos.empty
-    assert "price" in datos.columns
+    assert isinstance(X, pd.DataFrame)
+    assert not X.empty
+    assert "price" not in X.columns
+    assert len(X) == len(y)
+    assert (y > 0).all()
 
 
 def test_metricas_modelo_perfecto():
