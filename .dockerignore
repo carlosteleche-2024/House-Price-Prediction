@@ -1,9 +1,7 @@
-.git
-.venv
-venv
-__pycache__
-*.pyc
-.pytest_cache
-.ipynb_checkpoints
-.env
-*.zip
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+.git/
+.venv/
+**/.DS_Store
+fase-4/registros/*.csv

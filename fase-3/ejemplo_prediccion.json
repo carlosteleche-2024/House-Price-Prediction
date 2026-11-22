@@ -1,0 +1,17 @@
+{
+  "date": "2014-05-02",
+  "bedrooms": 3.0,
+  "bathrooms": 1.5,
+  "sqft_living": 1340.0,
+  "sqft_lot": 7912.0,
+  "floors": 1.5,
+  "waterfront": 0.0,
+  "view": 0.0,
+  "condition": 3.0,
+  "sqft_above": 1340.0,
+  "sqft_basement": 0.0,
+  "yr_built": 1955.0,
+  "yr_renovated": 2005.0,
+  "city": "Shoreline",
+  "statezip": "WA 98133"
+}
