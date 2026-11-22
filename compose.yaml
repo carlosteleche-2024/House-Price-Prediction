@@ -1,0 +1,16 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: fase-3/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATA_PATH: /data/DataSet_House_Price_Prediction.csv
+      MODELS_DIR: /models
+      MONITOR_LOG: /logs/solicitudes.csv
+      MODEL_VERSION: ${MODEL_VERSION:-v1}
+    volumes:
+      - ./fase-1/DataSet_House_Price_Prediction.csv:/data/DataSet_House_Price_Prediction.csv:ro
+      - ./artifacts:/models
+      - ./fase-4/registros:/logs

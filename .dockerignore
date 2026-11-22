@@ -1,0 +1,7 @@
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+.git/
+.venv/
+**/.DS_Store
+fase-4/registros/*.csv
